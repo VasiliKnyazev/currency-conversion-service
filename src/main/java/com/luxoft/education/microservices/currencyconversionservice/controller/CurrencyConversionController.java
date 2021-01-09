@@ -1,6 +1,7 @@
 package com.luxoft.education.microservices.currencyconversionservice.controller;
 
 import com.luxoft.education.microservices.currencyconversionservice.model.CurrencyConversionResult;
+import com.luxoft.education.microservices.currencyconversionservice.service.CurrencyExchangeServiceProxy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,12 @@ import java.util.Map;
 @RestController
 public class CurrencyConversionController {
 
+    private CurrencyExchangeServiceProxy currencyExchangeServiceProxy;
+
+    public CurrencyConversionController(CurrencyExchangeServiceProxy currencyExchangeServiceProxy) {
+        this.currencyExchangeServiceProxy = currencyExchangeServiceProxy;
+    }
+
     @GetMapping("/currency-converter/from/{from}/to/{to}/quantity/{quantity}")
     public CurrencyConversionResult convertCurrency(@PathVariable String from,
                                                     @PathVariable String to,
@@ -25,6 +32,15 @@ public class CurrencyConversionController {
         ResponseEntity<CurrencyConversionResult> responseEntity = new RestTemplate().
                 getForEntity("http://localhost:8000/currency-exchange/from/{from}/to/{to}", CurrencyConversionResult.class, uriVariables);
         CurrencyConversionResult response = responseEntity.getBody();
+        return new CurrencyConversionResult(response.getId(), from, to, response.getConversionMultiple(), quantity, quantity.multiply(response.getConversionMultiple()), response.getPort());
+    }
+
+    @GetMapping("/currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
+    public CurrencyConversionResult convertCurrencyFeign(@PathVariable String from,
+                                                    @PathVariable String to,
+                                                    @PathVariable BigDecimal quantity) {
+
+        CurrencyConversionResult response = currencyExchangeServiceProxy.retrieveExchangeValue(from, to);
         return new CurrencyConversionResult(response.getId(), from, to, response.getConversionMultiple(), quantity, quantity.multiply(response.getConversionMultiple()), response.getPort());
     }
 
