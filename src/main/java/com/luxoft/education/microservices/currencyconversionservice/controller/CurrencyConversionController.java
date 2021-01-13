@@ -2,6 +2,8 @@ package com.luxoft.education.microservices.currencyconversionservice.controller;
 
 import com.luxoft.education.microservices.currencyconversionservice.model.CurrencyConversionResult;
 import com.luxoft.education.microservices.currencyconversionservice.service.CurrencyExchangeServiceProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +17,7 @@ import java.util.Map;
 @RestController
 public class CurrencyConversionController {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private CurrencyExchangeServiceProxy currencyExchangeServiceProxy;
 
     public CurrencyConversionController(CurrencyExchangeServiceProxy currencyExchangeServiceProxy) {
@@ -41,6 +44,7 @@ public class CurrencyConversionController {
                                                     @PathVariable BigDecimal quantity) {
 
         CurrencyConversionResult response = currencyExchangeServiceProxy.retrieveExchangeValue(from, to);
+        logger.info("LOGGER: response: {}", response);
         return new CurrencyConversionResult(response.getId(), from, to, response.getConversionMultiple(), quantity, quantity.multiply(response.getConversionMultiple()), response.getPort());
     }
 
